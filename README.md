@@ -2,7 +2,7 @@
 Implement and exemplify the use of multi-species occupancy models (MSOM)
 
 This project contains several builds of multi-species occupancy models and serves the purpose of
-1 - Demonstrating the how MSOM workds
+1 - Demonstrating the how MSOM works
 2 - Showing how standard ecological data can be organized to run the models
 3 - Showing how flexible the model is for several types of ecological data
 4 - Creating a backbone for other users to improve the model (please create branches!)
@@ -21,7 +21,7 @@ The file ExampleData1.csv contains a simple ecological dataframe that can be use
 6 - number of sections within a transect in which a plant or a termite species was observed   
 7 - many other examples   
 
-Note that in all cases, there is a cap on the maximum number of indicences in a site. For example, if a butterfly species was observed every hour during a 6 hour period, then the minimum observation of the species is zero and the maximum is 6. Therefore, the values filling the matrix MUST lay somewhere in the range from zero to 6. This does not mean that some species must have been observed in observed hours (i.e. the maximum value in the matrix can be lower than 6).
+Note that in all cases, there is a cap on the maximum number of incidences in a site. For example, if a butterfly species was observed every hour during a 6 hour period, then the minimum observation of the species is zero and the maximum is 6. Therefore, the values filling the matrix MUST lay somewhere in the range from zero to 6. This does not mean that some species must have been observed in observed hours (i.e. the maximum value in the matrix can be lower than 6).
 
 The last column of this data has the maximum number of incidences that could be obtained.
 
@@ -41,5 +41,3 @@ This data structure DOES NOT allows:
 
 
 script Demonstration.R creates a simple ec
-
-
