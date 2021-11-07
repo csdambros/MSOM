@@ -1,8 +1,6 @@
 # Script created by CSDambros
 # Bayesian inference to estimate species detection, occurrence, and unbiased species richness based on species counts
 
-#rm(list=ls()) # Remove all previous objects in R (not required)
-
 #--------------- Load R packages ---------------
 
 # requires the jags program to be installed in computer (visit https://sourceforge.net/projects/mcmc-jags/files/)
@@ -12,78 +10,9 @@ library(vegan)
 
 # library(runjags) # Only used for fast parallel processing (not required; see below)
 
-#--------------- Create hierarchical model ---------------
 
-#Write the model code to a text file (required to run JAGS)
-#Model based on Dorazio and Royle 2005 and Dorazio et al. 2006
+## The model DorazioMSOM.jags in the JAGS folder is based on Dorazio and Royle 2005 and Dorazio et al. 2006
 #Code adapted from http://www.mbr-pwrc.usgs.gov/site/communitymodeling/basic%20model.zip
-
-# If you do not want to understand the code, just execute the cat function to create the model. All outputs will be explained when you execute the model (see code below).
-
-cat("
-    model{
-    
-    #Define prior distributions for community-level model parameters
-    #All priors were defined as broad uninformative priors (can be changed)
-
-    omega ~ dunif(0,1) # Overall occurrence in metacommunity
-    
-    u.mean ~ dunif(0,1)# Mean occurrence for all species
-    mu.u <- log(u.mean) - log(1-u.mean)# Inv Logit transformation
-    
-    v.mean ~ dunif(0,1)# Mean detection for all species
-    mu.v <- log(v.mean) - log(1-v.mean) # Inv Logit transformation
-    
-    b1.psi.mean ~ dunif(0,1)# Mean effect of environment on occurrence
-    mu.b1.psi <- log(b1.psi.mean) - log(1-b1.psi.mean)# Inv Logit transformation
-    
-    b1.p.mean ~ dunif(0,1)# Mean effect of environment on detection
-    mu.b1.p <- log(b1.p.mean) - log(1-b1.p.mean)# Inv Logit transformation
-    
-    
-    tau.u ~ dgamma(0.1,0.1) # Variation across species in occurrence
-    tau.v ~ dgamma(0.1,0.1) # Variation across species in detection
-    
-    tau.b1.psi ~ dgamma(0.1,0.1) # Variation across species on the effect of the env. in occurrence
-    tau.b1.p ~ dgamma(0.1,0.1)# Variation across species on the effect of the env. in detection
-    
-    for (i in 1:(n+nzeroes)) {
-    
-    #Create priors for individual species i from the community level prior distributions
-    w[i] ~ dbern(omega)# Occurrence of species in metacommunity
-    u[i] ~ dnorm(mu.u, tau.u)# Occurrence of species in transects
-    v[i] ~ dnorm(mu.v, tau.v)# Detection of species in transects
-    b1.psi[i] ~ dnorm(mu.b1.psi,tau.b1.psi)# Effect of env on occurrence
-    b1.p[i] ~ dnorm(mu.b1.p,tau.b1.p)# Effect of env on detection
-    
-    #Create a loop to estimate the Z matrix (true occurrence for species i at transect j)
-    for (j in 1:J) {
-    logit(psi[j,i]) <- u[i]+b1.psi[i]*Env[j] # Can be changed to include other predictor variables
-    
-    mu.psi[j,i] <- psi[j,i]*w[i]
-    Z[j,i] ~ dbern(mu.psi[j,i])
-    
-    #Create a loop to estimate detection for species i at point k during #sampling period k
-
-    for (k in 1:K[j]) {
-    logit(p[j,k,i]) <-  v[i]+b1.p[i]*Env[j]
-    mu.p[j,k,i] <- p[j,k,i]*Z[j,i]
-    X[j,k,i] ~ dbern(mu.p[j,k,i])
-    }   	}		}
-    
-    for(j in 1:J){
-    N3[j]<-sum(Z[j,])# Species richness at individual transects
-    }
-    
-    #Sum all species observed (n) and unobserved species (n0) to find the total estimated richness
-
-    n0 <- sum(w[(n+1):(n+nzeroes)])
-    N <- n + n0 # Species richness in metacommunity
-    N2<- sum(w) # Sames as previous line (simply a checkpoint)
-    
-    #Finish writing the text file into a document called basicmodel.jags
-    }
-    ",file="basicmodel.jags")
 
 
 ###############################################
@@ -94,7 +23,7 @@ cat("
 
 # 1. Load data from Dambros et al. (2016)
 
-# Termite data: Each row is a record (vial). Data transformation is required to run model.
+# Termite data: Each row is a record (vial). Data transformation is required to run model. The following code shows how this tranformation is done.
 termiteLongData<-read.csv("https://ndownloader.figshare.com/files/3299687")
 
 # Environmental data: Each entry is a value of soil clay content in a transect
@@ -136,8 +65,7 @@ detmat[,,(N+1):(N+nzero)]<-0
 # SECOND METHOD
 
 #################################################################
-## If you have a dataframe with sites x species filled with the number
-# of sections in which a species was found, use the following code to create the detmat array
+## If you have a dataframe with sites x species filled with the number of sections in which a species was found, use the following code to create the detmat array
 
 # We will first convert the long format into the site x species matrix to show how it works. This is not required if you have the long format and already have the detmat array
 
