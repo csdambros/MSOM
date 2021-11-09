@@ -72,62 +72,7 @@ plot(rowSums(occurrences>0),HDI$alphaDiv$Median)
 abline(0,1)
 
 
-
-
-
-head(ver$fixed$detection)
-coefs$fixed$detection
-
-
-
-ver$alphaDiv
-
-
-
-
-sim1df<-as.data.frame(as.matrix(msom$mcmc))
-
-# Logis scale
-hist(sim1df$psi0)
-
-
-# Converted to probabilities
-hist(plogis(sim1df$psi0))
-abline(v=quantile(plogis(sim1df$psi0),c(0.025,0.5,0.975)))
-
-
-
-
-
-
-
-
-ver<-summary(msom)
-# Convert results to data frame
-sim1df<-as.data.frame(as.matrix(msom$mcmc))
-
-msomcopy<-msom
-
-summary(msom,vars="psi0")
-
-
-# Get variable names
-names<-colnames(sim1df)
-
-### Get results for fixed effects
-Fdetection<-sim1df[,grepl("rho0",names),drop=FALSE]
-Foccupancy<-sim1df[,grepl("psi0",names),drop=FALSE]
-
-
-
-ver<-summary(msom)
-
-ver
-
-
-
-
-
-
-
+plot(seq(-2,2,by=0.01),dnorm(seq(-2,2,by=0.01),HDI$fixed$occupancy[4],HDI$fixed$occupancy[5]),type="l")
+abline(v=0)
+abline(v=HDI$fixed$occupancy[,1:3],col=2)
 
