@@ -2,15 +2,15 @@
 data{
 
 for(nv in nrnd){
-rsd[nv]<-1
+tau.rho[nv]<-1
 for(k in 1:nsp){
-rcoef[k,nv]<-0
+spX.rho[k,nv]<-0
 }}
 
 for(nv in nrnd2){
-rsd2[nv]<-1
+tau.psi[nv]<-1
 for(k in 1:nsp){
-rcoef2[k,nv]<-0
+spX.psi[k,nv]<-0
 }}
 
 }
@@ -29,11 +29,11 @@ detl[i]<- sum(vcoefs[i,])
 ocl[i]<- sum(vcoefs2[i,])
 
 for(v in 1:npred){
-vcoefs[i,v]<-(fcoef[v] + rcoef [species[i],v]) * pred[i,v]
+vcoefs[i,v]<-(rho0[v] + spX.rho [species[i],v]) * pred[i,v]
 }
 
 for(v in 1:npred2){
-vcoefs2[i,v]<-(fcoef2[v] + rcoef2 [species[i],v]) * pred2[i,v]
+vcoefs2[i,v]<-(psi0[v] + spX.psi [species[i],v]) * pred2[i,v]
 }
 
 }
@@ -42,28 +42,28 @@ vcoefs2[i,v]<-(fcoef2[v] + rcoef2 [species[i],v]) * pred2[i,v]
 # Detection
 # Fixed effects
 for(v in 1:npred){
-fcoef[v] ~ dnorm(0,1/3^2)
+rho0[v] ~ dnorm(0,1/3^2)
 }
 # Random effects
 for(v in rnd){
-rsd[v] ~ dgamma(0.01,0.01)
+tau.rho[v] ~ dgamma(0.01,0.01)
 
 for(k in 1:nsp){
-rcoef[k,v]~dnorm(0,1/rsd[v]^2)
+spX.rho[k,v]~dnorm(0,1/tau.rho[v]^2)
 
 }}
 
 # Occupancy
 # Fixed effects
 for(v in 1:npred2){
-fcoef2[v] ~ dnorm(0,1/3^2)
+psi0[v] ~ dnorm(0,1/3^2)
 }
 # Random effects
 for(v in rnd2){
-rsd2[v] ~ dgamma(0.01,0.01)
+tau.psi[v] ~ dgamma(0.01,0.01)
 
 for(k in 1:nsp){
-rcoef2[k,v]~dnorm(0,1/rsd2[v]^2)
+spX.psi[k,v]~dnorm(0,1/tau.psi[v]^2)
 }}
 
 for(s in 1:nsp){
