@@ -67,7 +67,7 @@ occuMSOM<-function(
   
   
   require(runjags)
-  
+  require(rjags)
   
   # Parse formulas
   detformula <-as.formula(paste("y",c(formula[[2]]),collapse=""))
@@ -146,8 +146,7 @@ occuMSOM<-function(
   #cbind((1:npred2)%in%rnd2,(1:npred2)%in%nrnd2)
   bf$species<-as.factor(bf$species)
   bf$site<-as.factor(bf$site)
-  
-  
+
   data.jags<-list(nsp=nlevels(bf$species),
                   species=as.integer(bf$species),
                   nz=nrow(bf),
@@ -163,7 +162,10 @@ occuMSOM<-function(
                   J=bf$J)
   
   
-  inits<-function(){
+  parallelSeed<-parallel.seeds("base::BaseRNG", n.chains)
+  
+  
+  inits<-function(chain){
     
     z=ifelse(data.jags$y>0,1,rbinom(length(data.jags$y),1,0.5))
     w_pre<-tapply(z,data.jags$species,max)
@@ -173,15 +175,19 @@ occuMSOM<-function(
       rho0=rnorm(npred,0,2),
       psi0=rnorm(npred2,0,2),
       z=z,
-      w=w
+      w=w,
+      .RNG.name=parallelSeed[[chain]]$.RNG.name,
+      .RNG.state=parallelSeed[[chain]]$.RNG.state
     )
   }
-  
+
+
+inits2<-lapply(1:3,inits)
   
   sim1rj<-run.jags("JAGS/MixedBinom.jags",
                    monitor = c("rho0","psi0","tau.rho","tau.psi","spX.rho","spX.psi","z","w"),
                    data = data.jags,
-                   n.chains = n.chains,inits = inits,burnin = burnin,adapt = n.adapt,sample = n.iter,method = method,thin = thin)
+                   n.chains = n.chains,inits = inits2,burnin = burnin,adapt = n.adapt,sample = n.iter,method = method,thin = thin,silent.jags = TRUE,summarise = FALSE)
   
   
   sim1rj$vars<-list(detpred=prednames,psipred=prednames2,detrpred=predrnames,psirpred=predrnames2,spnames=levels(bf$species),sitenames=levels(bf$site),rnd=rnd,rnd2=rnd2,input=bf)
@@ -277,7 +283,7 @@ coef.occuMSOM<-function(x){
   
 }
 
-summary.occuMSOM<-function(x){
+summary.occuMSOM<-function(x,returnZ=FALSE){
   
   require(runjags)
   
@@ -337,7 +343,7 @@ summary.occuMSOM<-function(x){
   zarray<-array(t(z),
                 c(length(x$vars$sitenames),
                   length(x$vars$spnames),
-                  nrow(z)))
+                  nrow(z)),dimnames = list(x$vars$sitenames,x$vars$spnames,NULL))
   
   Sest<-apply(zarray,3,rowSums)
   Sestq<-apply(Sest,1,quantile,c(0.025,0.5,0.975))
@@ -359,7 +365,7 @@ summary.occuMSOM<-function(x){
   (fixed=list(occupancy=Foccupancy,detection=Fdetection))
   (spcoefs<-list(occupancy=Roccupancy,detection=Rdetection))
   
-  resu<-list(random=random,fixed=fixed,spdeviations=spcoefs,alphaDiv=alpha.summary,gammaDiv=gamma.summary)
+  resu<-list(random=random,fixed=fixed,spdeviations=spcoefs,alphaDiv=alpha.summary,gammaDiv=gamma.summary,z=if(returnZ){zarray})
   
   return(resu)
   

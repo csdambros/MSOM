@@ -64,4 +64,56 @@ plogis(coefs$spcoefs$occupancy)
 # Estimated rho per species
 plogis(coefs$spcoefs$detection)
 
+# 2. Two species and 4 sites ####
+sp1<-c(1,1,1,1,1,1,1,1,1,1,1,1,1)
+sp2<-c(1,0,0,1,0,0,0,0,0,0,0,0,0)
+
+occ<-cbind(sp2,sp1)
+rownames(occ)<-LETTERS[1:length(sp1)]
+J = 30
+
+rho=0.09
+
+# Create observed data
+det<-occ
+det[,]<-rbinom(occ,occ*J,rho)
+
+# True occurrences
+occ
+
+# Observed data
+det
+
+# Transform data
+bf<-bFrameOccuMultiBinom(y = det,J = J)
+
+# Run model
+msom<-occuMSOM(~1+(1|species)~1+(1|species),bf=bf,n.adapt = 500,n.iter = 100,burnin = 50,thin = 10,n.chains = 3,method = "parallel")
+
+# Extract coefficients
+coefs<-coefficients(msom)
+coefs
+
+# Compare estimates and truth
+# Overall occupancy
+# estimated
+plogis(coefs$fixed$occupancy)
+# truth
+mean(occ)
+
+# Overall detection
+# estimated
+plogis(coefs$fixed$detection)
+# truth
+rho
+
+### Calculate summary statistics (HDI/HDP), Gelman-Rubin statistic
+summ<-summary.occuMSOM(msom,returnZ = TRUE)
+
+summ$alphaDiv
+summ$gammaDiv
+
+apply(summ$z,c(1,2),min)
+apply(summ$z,c(1,2),mean)
+(det>0)*1
 
