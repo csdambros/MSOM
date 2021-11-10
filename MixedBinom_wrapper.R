@@ -187,7 +187,7 @@ inits2<-lapply(1:3,inits)
   sim1rj<-run.jags("JAGS/MixedBinom.jags",
                    monitor = c("rho0","psi0","tau.rho","tau.psi","spX.rho","spX.psi","z","w"),
                    data = data.jags,
-                   n.chains = n.chains,inits = inits2,burnin = burnin,adapt = n.adapt,sample = n.iter,method = method,thin = thin,silent.jags = TRUE,summarise = FALSE)
+                   n.chains = n.chains,inits = inits2,burnin = burnin,adapt = n.adapt,sample = n.iter,method = method,thin = thin,silent.jags = FALSE,summarise = FALSE)
   
   
   sim1rj$vars<-list(detpred=prednames,psipred=prednames2,detrpred=predrnames,psirpred=predrnames2,spnames=levels(bf$species),sitenames=levels(bf$site),rnd=rnd,rnd2=rnd2,input=bf)
